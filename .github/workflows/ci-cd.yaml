@@ -8,8 +8,8 @@ on:
       - 'gitops-infra/**'
 
 permissions:
-  id-token: write
-  contents: write
+  contents: write # Required to push image tag updates back to Git
+
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: payment-service
@@ -25,7 +25,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::383313559988:role/payment-service-irsa-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
