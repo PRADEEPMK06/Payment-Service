@@ -3,7 +3,7 @@ replicaCount: 2
 image:
   repository: 383313559988.dkr.ecr.us-east-1.amazonaws.com/payment-service
   pullPolicy: IfNotPresent
-  tag: "9c9021079a7e76a4a3dcc97af082bbe9588da093"
+  tag: "ed59eae9d0eb02208480091284f79563e14028f0"
 
 service:
   type: ClusterIP
