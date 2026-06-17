@@ -5,7 +5,7 @@ image:
   repository: 383313559988.dkr.ecr.us-east-1.amazonaws.com/payment-service
   pullPolicy: IfNotPresent
   # Overwritten dynamically by GitHub Actions workflow with the Git Commit SHA
-  tag: "latest"
+  tag: "9c9021079a7e76a4a3dcc97af082bbe9588da093"
 
 service:
   type: ClusterIP
