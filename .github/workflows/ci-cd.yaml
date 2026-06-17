@@ -1,0 +1,64 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'gitops-infra/**'
+
+permissions:
+  id-token: write
+  contents: write
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: payment-service
+  GITOPS_REPO: ${{ github.repository }}
+
+jobs:
+  build-and-ship:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Application Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::383313559988:role/payment-service-irsa-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Checkout GitOps Configuration
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITOPS_REPO }}
+          token: ${{ secrets.GITOPS_GITHUB_TOKEN }}
+          path: mono-repo-root
+
+      - name: Update Image Tag in Helm Chart
+        run: |
+          cd mono-repo-root
+          sed -i 's/tag: .*/tag: "${{ github.sha }}"/g' gitops-infra/charts/payment-service/values.yaml
+
+      - name: Commit and Push Changes to GitOps Track
+        run: |
+          cd mono-repo-root
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add gitops-infra/charts/payment-service/values.yaml
+          git commit -m "Automated image tag update: ${{ github.sha }} [skip ci]"
+          git push

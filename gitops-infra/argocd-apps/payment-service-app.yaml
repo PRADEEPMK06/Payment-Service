@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/<YOUR-GITHUB-USERNAME>/<YOUR-REPO-NAME>.git'
+    repoURL: 'https://github.com/PRADEEPMK06/Payment-Service.git'
     targetRevision: HEAD
     path: gitops-infra/charts/payment-service 
   destination:
