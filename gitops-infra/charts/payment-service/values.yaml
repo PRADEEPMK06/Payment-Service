@@ -1,0 +1,29 @@
+# Global configurations for payment-service
+replicaCount: 2
+
+image:
+  repository: 383313559988.dkr.ecr.us-east-1.amazonaws.com/payment-service
+  pullPolicy: IfNotPresent
+  # Overwritten dynamically by GitHub Actions workflow with the Git Commit SHA
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
